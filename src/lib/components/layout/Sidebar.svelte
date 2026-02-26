@@ -1,142 +1,70 @@
 <script>
-  import { fade, fly } from 'svelte/transition';
+  import { fly, fade } from 'svelte/transition';
   import { ui } from '../../stores/uiStore';
   import { fileSystem } from '../../stores/fileSystemStore';
   import FileTree from '../filesystem/FileTree.svelte';
 
-  // Sidebar close logic
-  function close() {
-    ui.closeSidebar();
+  let newName = "";
+  let isCreating = null; // 'file' or 'folder'
+
+  function createItem(type) {
+    const name = prompt(`Enter ${type} name:`);
+    if (name) {
+      // Add to root (default)
+      fileSystem.addNode(null, name, type);
+    }
   }
 </script>
 
 {#if $ui.isSidebarOpen}
-  <div 
-    class="overlay" 
-    on:click={close}
-    transition:fade={{ duration: 200 }}
-  ></div>
+  <div class="overlay" on:click={ui.closeSidebar} transition:fade></div>
 
-  <aside 
-    class="sidebar glass"
-    transition:fly={{ x: -250, duration: 300 }}
-  >
+  <aside class="sidebar" transition:fly={{ x: -250, duration: 300 }}>
+    
     <div class="sidebar-header">
-      <span class="brand">
-        <i class="ri-code-s-slash-line"></i> AURA
-      </span>
-      <button class="close-btn" on:click={close}>
+      <span class="brand">PRO EDITOR</span>
+      <button class="close-btn" on:click={ui.closeSidebar}>
         <i class="ri-menu-fold-line"></i>
       </button>
     </div>
 
     <div class="tree-container">
-      <FileTree 
-        nodes={$fileSystem.root} 
-        activeId={$fileSystem.activeFileId} 
-      />
+      <FileTree nodes={$fileSystem.root} />
     </div>
 
-    <div class="sidebar-footer">
-      <button class="action-btn" on:click={() => alert('Export Feature Coming Soon')}>
-        <i class="ri-download-cloud-2-line"></i> Export ZIP
+    <div class="sidebar-actions">
+      <button class="btn-action" on:click={() => createItem('file')}>
+        <i class="ri-file-add-line"></i> New File
       </button>
-      <button class="action-btn" on:click={() => alert('Settings Coming Soon')}>
-        <i class="ri-settings-4-line"></i> Settings
+      <button class="btn-action" on:click={() => createItem('folder')}>
+        <i class="ri-folder-add-line"></i> New Folder
       </button>
     </div>
+
   </aside>
 {/if}
 
 <style>
-  /* --- Overlay --- */
-  .overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 90; /* Behind sidebar, above editor */
-    backdrop-filter: blur(2px);
-  }
-
-  /* --- Sidebar Panel --- */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 90; backdrop-filter: blur(2px); }
   .sidebar {
-    position: fixed;
-    top: 0; bottom: 0; left: 0;
-    width: 260px;
-    background: var(--bg-sidebar);
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border);
-    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+    position: fixed; top: 0; bottom: 0; left: 0; width: 260px;
+    background: #181825; z-index: 100; display: flex; flex-direction: column;
+    border-right: 1px solid #313244;
   }
-
-  /* Header */
-  .sidebar-header {
-    height: var(--header-h);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .brand {
-    font-weight: 700;
-    font-size: 16px;
-    color: var(--text-main);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .sidebar-header { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #313244; color: #fff; font-weight: bold; }
+  .close-btn { background: none; border: none; color: #a6adc8; font-size: 20px; }
   
-  .brand i {
-    color: var(--accent);
-    font-size: 20px;
-  }
+  .tree-container { flex: 1; overflow-y: auto; padding: 10px 0; }
 
-  .close-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    font-size: 20px;
-    padding: 4px;
+  /* New Action Buttons Styling */
+  .sidebar-actions {
+    padding: 12px; border-top: 1px solid #313244;
+    display: flex; gap: 8px; background: #11111b;
   }
-
-  /* Tree Area */
-  .tree-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 0;
+  .btn-action {
+    flex: 1; background: #313244; border: none; color: #cdd6f4;
+    padding: 8px; border-radius: 4px; font-size: 12px; display: flex;
+    align-items: center; justify-content: center; gap: 6px;
   }
-
-  /* Footer */
-  .sidebar-footer {
-    padding: 12px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background: var(--bg-sidebar);
-  }
-
-  .action-btn {
-    width: 100%;
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 10px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    transition: all 0.2s;
-  }
-
-  .action-btn:active {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
+  .btn-action:active { background: #89b4fa; color: #11111b; }
 </style>
