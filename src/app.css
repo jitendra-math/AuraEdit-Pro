@@ -1,0 +1,79 @@
+/* src/app.css */
+
+/* --- 1. FONTS & RESET --- */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg-main: #1e1e2e;       /* Deep Editor Background */
+  --bg-sidebar: #181825;    /* Darker Sidebar */
+  --bg-panel: #313244;      /* Lighter Panels/Modals */
+  
+  --text-main: #cdd6f4;     /* Primary Text */
+  --text-muted: #a6adc8;    /* Secondary Text */
+  
+  --accent: #89b4fa;        /* Soft Blue Accent */
+  --accent-hover: #b4befe;  
+  --danger: #f38ba8;        /* Red for Errors/Delete */
+  --success: #a6e3a1;       /* Green for Success */
+
+  --border: #45475a;        /* Subtle Borders */
+  
+  --header-h: 50px;         /* Fixed Header Height */
+  --font-ui: 'Outfit', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* Remove mobile tap gray box */
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  height: 100dvh; /* Dynamic Viewport Height for Mobile */
+  width: 100vw;
+  overflow: hidden; /* Prevent body scroll */
+  user-select: none; /* UI text not selectable */
+}
+
+/* --- 2. UTILITIES --- */
+.glass {
+  background: rgba(30, 30, 46, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- 3. CUSTOM SCROLLBAR (Sleek) --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* --- 4. SVELTE APP CONTAINER --- */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
