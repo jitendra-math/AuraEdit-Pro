@@ -1,6 +1,7 @@
 <script>
   import { ui } from '../../stores/uiStore';
   import { fileSystem } from '../../stores/fileSystemStore';
+  import { AIParser } from '../../utils/aiParser'; // AI Logic Import
 
   // Reactive: Find the active file object whenever ID changes
   $: activeFile = findNode($fileSystem.root, $fileSystem.activeFileId) || { name: 'AuraEdit' };
@@ -16,20 +17,40 @@
      return null;
   }
 
+  // --- Feature 1 & 2: Smart Paste Logic ---
   async function handleSmartPaste() {
-    if (!$fileSystem.activeFileId) return;
-    
-    // Safety Check (Fast Native Alert)
-    if (!confirm(`Overwrite "${activeFile.name}" with clipboard content?`)) return;
-
     try {
       const text = await navigator.clipboard.readText();
-      fileSystem.updateFileContent($fileSystem.activeFileId, text);
-      // Trigger Toast (Assume Toast UI is listening to store)
-      ui.showToast("File Updated!", "success");
+
+      // 1. Check for AI Tree Structure (e.g. ├── src/)
+      if (text.includes('├──') || text.includes('└──') || (text.includes('/') && text.split('\n').length > 3)) {
+         if (confirm("📂 AI Folder Structure Detected!\n\nGenerate folders and files from this text?")) {
+             const success = AIParser.parse(text);
+             if (success) {
+                 ui.showToast("Project Structure Created!", "success");
+                 return; // Stop here if it was a tree
+             }
+         }
+      }
+
+      // 2. Normal Code Paste (Validation)
+      if (!$fileSystem.activeFileId) {
+          ui.showToast("Please open a file first!", "error");
+          return;
+      }
+
+      // 3. Trigger Custom Glass Modal (App.svelte handles the actual paste)
+      ui.openModal('confirm-paste');
+
     } catch (err) {
-      alert("Clipboard permission denied! Please allow access.");
+      console.error(err);
+      ui.showToast("Allow Clipboard Access", "error");
     }
+  }
+
+  // --- Feature 3: Live Preview Trigger ---
+  function handleRun() {
+    ui.openModal('preview'); // Opens the Preview.svelte component
   }
 </script>
 
@@ -42,11 +63,11 @@
   </div>
 
   <div class="right">
-    <button class="icon-btn" on:click={handleSmartPaste} title="Smart Paste">
+    <button class="icon-btn" on:click={handleSmartPaste} title="Smart Paste / Import Tree">
       <i class="ri-clipboard-line"></i>
     </button>
     
-    <button class="icon-btn highlight" title="Run Code">
+    <button class="icon-btn highlight" on:click={handleRun} title="Run Live Preview">
       <i class="ri-play-fill"></i>
     </button>
   </div>
@@ -61,7 +82,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 12px;
-    flex-shrink: 0; /* CRITICAL: Prevents header from shrinking/scrolling */
+    flex-shrink: 0;
     z-index: 50;
   }
 
@@ -91,7 +112,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px; /* Large touch target */
+    width: 40px;
     height: 40px;
     border-radius: 8px;
     transition: background 0.2s;
